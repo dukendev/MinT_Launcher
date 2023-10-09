@@ -11,16 +11,10 @@ import android.view.animation.AnticipateInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
+import com.dukendev.mintlauncher.presentation.nav.MintNavGraph
 import com.dukendev.mintlauncher.ui.theme.MinTLauncherTheme
 
 class MainActivity : ComponentActivity() {
@@ -31,13 +25,7 @@ class MainActivity : ComponentActivity() {
         hideSystemUI()
         setContent {
             MinTLauncherTheme {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black)
-                ) {
-                    Text(text = ".minT", style = TextStyle(color = Color.White))
-                }
+                MintNavGraph()
             }
         }
     }
