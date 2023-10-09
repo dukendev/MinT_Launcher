@@ -1,8 +1,12 @@
 package com.dukendev.mintlauncher
 
 import android.animation.ObjectAnimator
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.WindowInsets
+import android.view.WindowInsetsController
+import android.view.WindowManager
 import android.view.animation.AnticipateInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,22 +14,35 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.TextStyle
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
 import com.dukendev.mintlauncher.ui.theme.MinTLauncherTheme
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val mainViewModel by viewModels<MainViewModel>()
+        setupSplash(mainViewModel)
+        hideSystemUI()
+        setContent {
+            MinTLauncherTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black)
+                ) {
+                    Text(text = ".minT", style = TextStyle(color = Color.White))
+                }
+            }
+        }
+    }
+
+    private fun setupSplash(mainViewModel: MainViewModel) {
         installSplashScreen().apply {
             this.setKeepOnScreenCondition {
                 !mainViewModel.isSplashLoaded.value
@@ -45,15 +62,20 @@ class MainActivity : ComponentActivity() {
                 slideUp.start()
             }
         }
-        setContent {
-            MinTLauncherTheme {
-                val systemUiController = rememberSystemUiController()
-                systemUiController.setStatusBarColor(Color.Transparent)
-                Box(modifier = Modifier.fillMaxSize()){
-                    Text(text = ".minT", modifier = Modifier.background(Color.White))
-                }
+    }
+
+    private fun hideSystemUI() {
+        actionBar?.hide()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        } else {
+            window.insetsController?.apply {
+                hide(WindowInsets.Type.statusBars())
+                systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
         }
     }
+
 }
 
