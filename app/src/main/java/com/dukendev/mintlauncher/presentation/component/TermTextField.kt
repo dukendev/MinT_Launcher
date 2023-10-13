@@ -2,6 +2,7 @@ package com.dukendev.mintlauncher.presentation.component
 
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -54,7 +55,7 @@ fun TermTextField(
         keyboardActions = keyboardActions,
         colors = colors,
         prefix = {
-            Text(text = "usr>")
+            Text(text = "~ ", color = MaterialTheme.colorScheme.primary)
         }
     )
 }
