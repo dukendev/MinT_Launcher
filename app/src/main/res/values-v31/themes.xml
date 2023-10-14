@@ -13,6 +13,9 @@
     <style name="NightAdjusted.Theme.Splash" parent="Theme.SplashScreen">
         <item name="android:windowLightStatusBar" >true</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+        <item name="android:navigationBarColor">
+            @android:color/black
+        </item>
     </style>
 
     <style name="Theme.minT.Splash" parent="NightAdjusted.Theme.Splash">

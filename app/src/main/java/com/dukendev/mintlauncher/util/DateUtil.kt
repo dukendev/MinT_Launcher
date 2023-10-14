@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+
 class DateUtil {
     companion object {
         private const val DATE_FORMAT = "yyyy-MM-dd"
@@ -51,6 +52,7 @@ class DateUtil {
             val dateTimeFormat = SimpleDateFormat(DATE_TIME_FORMAT, Locale.getDefault())
             return dateTimeFormat.format(this)
         }
+
 
     }
 }

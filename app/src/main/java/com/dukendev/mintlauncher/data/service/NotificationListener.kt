@@ -7,13 +7,19 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.Icon
+import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import android.util.Base64
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.dukendev.mintlauncher.data.event.GlobalNotificationItem
 import com.dukendev.mintlauncher.data.event.NotificationEvent
 import org.greenrobot.eventbus.EventBus
+import java.io.ByteArrayOutputStream
 
 
 const val ACTION = "com.dukendev.mintluancher.NOTIFICATION_LISTENER_SERVICE_ACTION"
@@ -75,7 +81,7 @@ class NotificationListener : NotificationListenerService() {
                     title = null,
                     content = null,
                     subContent = null,
-                    time = ""
+                    time = "", appDrawable = null
                 )
             )
 
@@ -88,6 +94,7 @@ class NotificationListener : NotificationListenerService() {
     }
 
     inner class NLServiceReceiver : BroadcastReceiver() {
+        @RequiresApi(Build.VERSION_CODES.Q)
         override fun onReceive(context: Context?, intent: Intent) {
             if (intent.getStringExtra(NLS_CMD) == CMD_DELETE_ALL) {
                 this@NotificationListener.cancelAllNotifications()
@@ -97,22 +104,36 @@ class NotificationListener : NotificationListenerService() {
                 sendBroadcast(i1)
                 var i = 1
                 var appLabel = ""
-                var appIcon: Drawable? = null
+                var appIcon: Icon? = null
+
+                var appIcon2: Drawable? = null
                 for (sbn in this@NotificationListener.activeNotifications) {
-                    val sbnContext = createPackageContext(packageName, 0)
+
                     val notificationDetails = buildString {
                         append("$i. ")
                         val packageName = sbn.packageName
                         try {
-                            val appInfo = sbnContext.packageManager.getApplicationInfo(
-                                packageName,
+
+                            val sbnContext = try {
+                                createPackageContext(sbn.opPkg, 0)
+                            } catch (e: Exception) {
+                                context
+                            }
+                            val appInfo = sbnContext?.packageManager?.getApplicationInfo(
+                                sbn.opPkg,
                                 PackageManager.GET_META_DATA
                             )
-                            appLabel = sbnContext.packageManager.getApplicationLabel(
-                                appInfo
-                            ).toString()
-
-                            appIcon = sbn.notification.smallIcon.loadDrawable(sbnContext)
+                            appLabel = appInfo?.let {
+                                sbnContext.packageManager?.getApplicationLabel(
+                                    it
+                                ).toString()
+                            }.toString()
+                            appIcon2 = appInfo?.let {
+                                packageManager?.getApplicationIcon(
+                                    it
+                                )
+                            }
+                            appIcon = sbn.notification.smallIcon
                             append("App Name: $appLabel, ")
                             append("Package ID: $packageName, ")
                             append("Icon: $appIcon, ")
@@ -142,20 +163,21 @@ class NotificationListener : NotificationListenerService() {
 
                     }
 
-
                     EventBus.getDefault().post(
                         NotificationEvent(
                             notification =
                             GlobalNotificationItem(
                                 packageId = sbn.packageName,
                                 appName = appLabel,
-                                appIcon = appIcon,
+                                appIcon = sbn.notification.smallIcon,
                                 title = sbn.notification.tickerText?.toString(),
                                 content = sbn.notification.extras.getCharSequence(Notification.EXTRA_TITLE)
                                     .toString(),
                                 subContent = sbn.notification.extras.getCharSequence(Notification.EXTRA_TEXT)
                                     .toString(),
                                 time = sbn.notification.`when`.toString(),
+                                appDrawable = appIcon2,
+                                pendingIntent = sbn.notification.contentIntent
                             )
 
                         )
@@ -173,6 +195,19 @@ class NotificationListener : NotificationListenerService() {
                 i3.putExtra("notification_event", "===== Notification List ====")
                 sendBroadcast(i3)
             }
+        }
+
+        private fun getStringFromBitmap(bitmapPicture: Bitmap): String? {
+            val COMPRESSION_QUALITY = 100
+            val encodedImage: String
+            val byteArrayBitmapStream = ByteArrayOutputStream()
+            bitmapPicture.compress(
+                Bitmap.CompressFormat.PNG, COMPRESSION_QUALITY,
+                byteArrayBitmapStream
+            )
+            val b = byteArrayBitmapStream.toByteArray()
+            encodedImage = Base64.encodeToString(b, Base64.DEFAULT)
+            return encodedImage
         }
     }
 }

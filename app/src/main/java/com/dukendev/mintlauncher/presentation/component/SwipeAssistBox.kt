@@ -43,12 +43,12 @@ fun SwipeAssistBox(
                             }
                         } else {
                             when {
-                                y > 0 -> {
+                                y > 10 -> {
                                     // down
                                     direction = 2
                                 }
 
-                                y < 0 -> {
+                                y < -10 -> {
                                     // up
                                     direction = 3
                                 }
